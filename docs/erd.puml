@@ -1,0 +1,113 @@
+@startuml Basit ERD
+
+entity Users {
+    *id : VARCHAR(40)
+    --
+    *first_name : VARCHAR(20)
+    *last_name : VARCHAR(20)
+    *email : VARCHAR(20)
+    *password : VARCHAR(20)
+    created_at : DATETIME    
+}
+
+entity Educations {
+    *id : VARCHAR(40)
+    --
+    *education_type_id : UINT
+    *user_id : VARCHAR(40)
+}
+
+entity EducationTypes {
+    *id : UINT
+    --
+    *faculty : VARCHAR(40)
+    *major : VARCHAR(40)
+}
+
+entity UserProgrammingLanguages {
+    *id : VARCHAR(40)
+    --
+    *user_id : VARCHAR(40)
+    *programming_language_id : UINT
+}
+
+entity ProgrammingLanguages {
+    *id : UINT
+    --
+    *name : VARCHAR(20)
+}
+
+entity ExpertiseAreas {
+    *id : VARCHAR(40)
+    --
+    *user_id : VARCHAR(40)
+    *expertise_area_id : UINT
+}
+
+entity ExpertiseAreaTypes {
+    *id : UINT
+    --
+    *name : VARCHAR(20)
+}
+
+entity Professionals {
+    *id : VARCHAR(40)
+    --
+    *experience_years : UINT
+    *interview_level : ENUM
+    --
+    *user_id : VARCHAR(40)
+}
+
+entity MockInterviews {
+    *id : VARCHAR(40)
+    --
+    *when : DATETIME
+    *type : ENUM
+    *question : VARCHAR(40)
+    --
+    *user_id : VARCHAR(40)
+    *language_id : UINT
+    *programming_language_id : UINT
+}
+
+entity Languages {
+    *id : UINT
+    --
+    *name : VARCHAR(20)
+}
+
+entity MockInterviewsPair {
+    *id : VARCHAR(40)
+    --
+    *mock_interview_id : VARCHAR(40)
+    *user_id : VARCHAR(40)
+} 
+
+entity MockInterviewsProgrammingLanguage {
+     *id : VARCHAR(40)
+    --
+    *mock_interview_id : VARCHAR(40)
+    *programming_language_id : UINT
+}
+
+Users ||--|{ Educations : Has
+EducationTypes ||-|{ Educations : Contain
+
+Users ||--|{ UserProgrammingLanguages : Has
+ProgrammingLanguages ||--|{ UserProgrammingLanguages : Contains
+
+Users ||--|{ ExpertiseAreas : Has
+ExpertiseAreaTypes ||-|{ ExpertiseAreas : Contain
+
+Users ||--|| Professionals : Has
+
+Languages ||--o{ MockInterviews : Contain
+
+Users ||--o{ MockInterviewsPair : Register
+MockInterviews ||--|{ MockInterviewsPair : Has
+
+ProgrammingLanguages ||--|{ MockInterviewsProgrammingLanguage : Has
+MockInterviews ||--|{ MockInterviewsProgrammingLanguage : Has
+
+@enduml
