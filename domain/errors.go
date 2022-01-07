@@ -7,4 +7,5 @@ var (
 	ErrNotFound            = errors.New("your request item is not found")
 	ErrConflict            = errors.New("your item already exist")
 	ErrBadParamInput       = errors.New("given param is not valid")
+	ErrUnexpected          = errors.New("unexpected error")
 )

@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/madjiebimaa/monim/domain"
 	repository "github.com/madjiebimaa/monim/user/repository/mysql"
 	"github.com/stretchr/testify/assert"
@@ -17,13 +18,13 @@ func TestGetByID(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
+	userID := uuid.NewString()
 	rows := sqlmock.NewRows([]string{"id", "name", "email", "password", "created_at"}).
-		AddRow("adjie", "Adjie", "adjie@gmail.com", "adjie", time.Now())
+		AddRow(userID, "Adjie", "adjie@gmail.com", "adjie", time.Now())
 
 	query := "SELECT id, name, email, password, created_at FROM users WHERE id = \\?"
 
 	t.Run("success get user", func(t *testing.T) {
-		userID := "adjie"
 		mock.ExpectQuery(query).WithArgs(userID).WillReturnRows(rows)
 
 		m := repository.NewMysqlAuthorRepository(db)
@@ -31,13 +32,12 @@ func TestGetByID(t *testing.T) {
 		user, err := m.GetByID(context.TODO(), userID)
 		assert.NoError(t, err)
 		assert.NotNil(t, user)
+		assert.Equal(t, userID, user.ID)
 	})
 
 	t.Run("fail because invalid argument", func(t *testing.T) {
-		query := "SELECT id, name, email, password, created_at FROM users WHERE id = \\?"
-
-		userID := "adjie"
-		mock.ExpectQuery(query).WithArgs("aji").WillReturnError(domain.ErrInternalServerError)
+		userID = "t"
+		mock.ExpectQuery(query).WithArgs(userID).WillReturnError(domain.ErrBadParamInput)
 
 		m := repository.NewMysqlAuthorRepository(db)
 

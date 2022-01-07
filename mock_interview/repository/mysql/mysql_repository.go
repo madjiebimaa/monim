@@ -21,7 +21,7 @@ func (m *mysqlMockInterviewRepo) GetByID(ctx context.Context, id string) (domain
 	query := `SELECT id, language, programming_language, meet_at, created_at, updated_at from mock_interview WHERE id = ?`
 	row, err := m.DB.QueryContext(ctx, query, id)
 	if err != nil {
-		return domain.MockInterview{}, nil
+		return domain.MockInterview{}, err
 	}
 
 	var mi domain.MockInterview

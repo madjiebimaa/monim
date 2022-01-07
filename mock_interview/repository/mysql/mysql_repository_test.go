@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/madjiebimaa/monim/domain"
 	repository "github.com/madjiebimaa/monim/mock_interview/repository/mysql"
 	"github.com/stretchr/testify/assert"
@@ -17,14 +18,14 @@ func TestGetByID(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	now := time.Now()
-	rows := sqlmock.NewRows([]string{"id", "language", "programming_language", "meet_at", "created_at", "updated_at"}).
-		AddRow("test", "english", "go", now, now, now)
-
 	query := "SELECT id, language, programming_language, meet_at, created_at, updated_at from mock_interview WHERE id = \\?"
 
+	miID := uuid.NewString()
+	now := time.Now()
+	rows := sqlmock.NewRows([]string{"id", "language", "programming_language", "meet_at", "created_at", "updated_at"}).
+		AddRow(miID, "english", "go", now, now, now)
+
 	t.Run("success get mock interview", func(t *testing.T) {
-		miID := "test"
 		mock.ExpectQuery(query).WithArgs(miID).WillReturnRows(rows)
 
 		m := repository.NewMysqlMockInterviewRepository(db)
@@ -32,11 +33,12 @@ func TestGetByID(t *testing.T) {
 		mi, err := m.GetByID(context.TODO(), miID)
 		assert.NoError(t, err)
 		assert.NotNil(t, mi)
+		assert.Equal(t, miID, mi.ID)
 	})
 
 	t.Run("fail because invalid argument", func(t *testing.T) {
-		miID := "test"
-		mock.ExpectQuery(query).WithArgs("t").WillReturnRows(rows)
+		miID = "t"
+		mock.ExpectQuery(query).WithArgs(miID).WillReturnError(domain.ErrBadParamInput)
 
 		m := repository.NewMysqlMockInterviewRepository(db)
 
@@ -72,7 +74,7 @@ func TestUpdate(t *testing.T) {
 	})
 
 	t.Run("fail because invalid argument", func(t *testing.T) {
-		mock.ExpectExec(query).WithArgs(mi.MeetAt, mi.UpdatedAt, mi.Language).WillReturnResult(sqlmock.NewResult(0, 1))
+		mock.ExpectExec(query).WithArgs(mi.MeetAt, mi.UpdatedAt, mi.Language).WillReturnError(domain.ErrBadParamInput)
 
 		m := repository.NewMysqlMockInterviewRepository(db)
 
@@ -88,10 +90,10 @@ func TestDelete(t *testing.T) {
 		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
 	}
 
-	t.Run("success delete mock interview", func(t *testing.T) {
-		query := "DELETE FROM mock_interviews WHERE id = \\?"
+	query := "DELETE FROM mock_interviews WHERE id = \\?"
+	miID := uuid.NewString()
 
-		miID := "test"
+	t.Run("success delete mock interview", func(t *testing.T) {
 		mock.ExpectExec(query).WithArgs(miID).WillReturnResult(sqlmock.NewResult(0, 1))
 
 		m := repository.NewMysqlMockInterviewRepository(db)
@@ -101,10 +103,8 @@ func TestDelete(t *testing.T) {
 	})
 
 	t.Run("fail because invalid argument", func(t *testing.T) {
-		query := "DELETE FROM mock_interviews WHERE id = \\?"
-
-		miID := "test"
-		mock.ExpectExec(query).WithArgs("t").WillReturnResult(sqlmock.NewResult(0, 1))
+		miID = "t"
+		mock.ExpectExec(query).WithArgs(miID).WillReturnError(domain.ErrBadParamInput)
 
 		m := repository.NewMysqlMockInterviewRepository(db)
 
