@@ -11,6 +11,7 @@ type MockInterview struct {
 	ProgrammingLanguage string    `json:"programming_language"`
 	MeetAt              time.Time `json:"meet_at"`
 	CreatedAt           time.Time `json:"created_at"`
+	UpdatedAt           time.Time `json:"updated_at"`
 }
 
 type MockInterviewUsecase interface {
