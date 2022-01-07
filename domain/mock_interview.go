@@ -7,10 +7,10 @@ import (
 
 type MockInterview struct {
 	ID                  string    `json:"id"`
-	Language            string    `json:"language"`
-	ProgrammingLanguage string    `json:"programming_language"`
+	Language            string    `json:"language" validate:"required"`
+	ProgrammingLanguage string    `json:"programming_language" validate:"required"`
 	User                User      `json:"user"`
-	MeetAt              time.Time `json:"meet_at"`
+	MeetAt              time.Time `json:"meet_at" validate:"required"`
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
 }
