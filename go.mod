@@ -3,6 +3,7 @@ module github.com/madjiebimaa/monim
 go 1.17
 
 require (
+	github.com/bxcodec/faker v2.0.1+incompatible // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/gin-gonic/gin v1.7.7 // indirect
