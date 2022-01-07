@@ -26,16 +26,14 @@ func (m *mysqlMockInterviewRepo) GetByID(ctx context.Context, id string) (domain
 
 	var mi domain.MockInterview
 	if row.Next() {
-		if err := row.Scan(
+		row.Scan(
 			&mi.ID,
 			&mi.Language,
 			&mi.ProgrammingLanguage,
 			&mi.MeetAt,
 			&mi.CreatedAt,
 			&mi.UpdatedAt,
-		); err != nil {
-			return domain.MockInterview{}, err
-		}
+		)
 	}
 
 	return mi, nil

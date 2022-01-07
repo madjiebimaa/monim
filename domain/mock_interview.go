@@ -9,6 +9,7 @@ type MockInterview struct {
 	ID                  string    `json:"id"`
 	Language            string    `json:"language"`
 	ProgrammingLanguage string    `json:"programming_language"`
+	User                User      `json:"user"`
 	MeetAt              time.Time `json:"meet_at"`
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
