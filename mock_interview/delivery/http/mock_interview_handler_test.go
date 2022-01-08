@@ -25,23 +25,42 @@ func TestGetByID(t *testing.T) {
 	assert.NoError(t, err)
 
 	mockUCase := new(mocks.MockInterviewUsecase)
-	mockUCase.On("GetByID", mock.Anything, mockMI.ID).Return(mockMI, nil).Once()
 
-	rec := httptest.NewRecorder()
-	r := gin.New()
-	miHttp.NewMockInterviewHandler(r, mockUCase)
+	t.Run("success get MI", func(t *testing.T) {
+		mockUCase.On("GetByID", mock.Anything, mockMI.ID).Return(mockMI, nil).Once()
 
-	req, err := http.NewRequest(http.MethodGet, "/api/mock_interviews/"+mockMI.ID, nil)
-	assert.NoError(t, err)
+		rec := httptest.NewRecorder()
+		r := gin.New()
+		miHttp.NewMockInterviewHandler(r, mockUCase)
 
-	r.ServeHTTP(rec, req)
+		req, err := http.NewRequest(http.MethodGet, "/api/mock_interviews/"+mockMI.ID, nil)
+		assert.NoError(t, err)
 
-	respBody, err := json.Marshal(mockMI)
-	assert.NoError(t, err)
+		r.ServeHTTP(rec, req)
 
-	assert.Equal(t, http.StatusOK, rec.Code)
-	assert.Equal(t, respBody, rec.Body.Bytes())
-	mockUCase.AssertExpectations(t)
+		respBody, err := json.Marshal(mockMI)
+		assert.NoError(t, err)
+
+		assert.Equal(t, http.StatusOK, rec.Code)
+		assert.Equal(t, respBody, rec.Body.Bytes())
+		mockUCase.AssertExpectations(t)
+	})
+
+	t.Run("fail because error in MI use case", func(t *testing.T) {
+		mockUCase.On("GetByID", mock.Anything, mockMI.ID).Return(domain.MockInterview{}, domain.ErrNotFound).Once()
+
+		rec := httptest.NewRecorder()
+		r := gin.New()
+		miHttp.NewMockInterviewHandler(r, mockUCase)
+
+		req, err := http.NewRequest(http.MethodGet, "/api/mock_interviews/"+mockMI.ID, nil)
+		assert.NoError(t, err)
+
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNotFound, rec.Code)
+		mockUCase.AssertExpectations(t)
+	})
 }
 
 func TestUpdate(t *testing.T) {
@@ -52,22 +71,66 @@ func TestUpdate(t *testing.T) {
 	assert.NoError(t, err)
 
 	mockUCase := new(mocks.MockInterviewUsecase)
-	mockUCase.On("Update", mock.Anything, mock.AnythingOfType("*domain.MockInterview")).Return(nil).Once()
 
-	rec := httptest.NewRecorder()
-	r := gin.New()
-	miHttp.NewMockInterviewHandler(r, mockUCase)
+	t.Run("success update mock interview", func(t *testing.T) {
+		mockUCase.On("Update", mock.Anything, mock.AnythingOfType("*domain.MockInterview")).Return(nil).Once()
 
-	j, err := json.Marshal(mockMI)
-	assert.NoError(t, err)
+		rec := httptest.NewRecorder()
+		r := gin.New()
+		miHttp.NewMockInterviewHandler(r, mockUCase)
 
-	req, err := http.NewRequest(http.MethodPatch, "/api/mock_interviews", strings.NewReader(string(j)))
-	assert.NoError(t, err)
+		j, err := json.Marshal(mockMI)
+		assert.NoError(t, err)
 
-	r.ServeHTTP(rec, req)
+		req, err := http.NewRequest(http.MethodPatch, "/api/mock_interviews", strings.NewReader(string(j)))
+		assert.NoError(t, err)
 
-	assert.Equal(t, http.StatusNoContent, rec.Code)
-	mockUCase.AssertExpectations(t)
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNoContent, rec.Code)
+		mockUCase.AssertExpectations(t)
+	})
+
+	t.Run("fail because request is not valid", func(t *testing.T) {
+		mockUCase.On("Update", mock.Anything, mock.AnythingOfType("*domain.MockInterview")).Return(nil).Once()
+
+		mockMI.Language = ""
+		mockMI.ProgrammingLanguage = ""
+
+		rec := httptest.NewRecorder()
+		r := gin.New()
+		miHttp.NewMockInterviewHandler(r, mockUCase)
+
+		j, err := json.Marshal(mockMI)
+		assert.NoError(t, err)
+
+		req, err := http.NewRequest(http.MethodPatch, "/api/mock_interviews", strings.NewReader(string(j)))
+		assert.NoError(t, err)
+
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		mockUCase.AssertExpectations(t)
+	})
+
+	t.Run("fail because there's error in MI use case", func(t *testing.T) {
+		mockUCase.On("Update", mock.Anything, mock.AnythingOfType("*domain.MockInterview")).Return(domain.ErrInternalServerError).Once()
+
+		rec := httptest.NewRecorder()
+		r := gin.New()
+		miHttp.NewMockInterviewHandler(r, mockUCase)
+
+		j, err := json.Marshal(mockMI)
+		assert.NoError(t, err)
+
+		req, err := http.NewRequest(http.MethodPatch, "/api/mock_interviews", strings.NewReader(string(j)))
+		assert.NoError(t, err)
+
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		mockUCase.AssertExpectations(t)
+	})
 }
 
 func TestDelete(t *testing.T) {
@@ -76,17 +139,36 @@ func TestDelete(t *testing.T) {
 	id := uuid.NewString()
 
 	mockUCase := new(mocks.MockInterviewUsecase)
-	mockUCase.On("Delete", mock.Anything, id).Return(nil)
 
-	rec := httptest.NewRecorder()
-	r := gin.New()
-	miHttp.NewMockInterviewHandler(r, mockUCase)
+	t.Run("success delete MI", func(t *testing.T) {
+		mockUCase.On("Delete", mock.Anything, id).Return(nil).Once()
 
-	req, err := http.NewRequest(http.MethodDelete, "/api/mock_interviews/"+id, nil)
-	assert.NoError(t, err)
+		rec := httptest.NewRecorder()
+		r := gin.New()
+		miHttp.NewMockInterviewHandler(r, mockUCase)
 
-	r.ServeHTTP(rec, req)
+		req, err := http.NewRequest(http.MethodDelete, "/api/mock_interviews/"+id, nil)
+		assert.NoError(t, err)
 
-	assert.Equal(t, http.StatusNoContent, rec.Code)
-	mockUCase.AssertExpectations(t)
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusNoContent, rec.Code)
+		mockUCase.AssertExpectations(t)
+	})
+
+	t.Run("fail because error in MI use case", func(t *testing.T) {
+		mockUCase.On("Delete", mock.Anything, id).Return(domain.ErrInternalServerError).Once()
+
+		rec := httptest.NewRecorder()
+		r := gin.New()
+		miHttp.NewMockInterviewHandler(r, mockUCase)
+
+		req, err := http.NewRequest(http.MethodDelete, "/api/mock_interviews/"+id, nil)
+		assert.NoError(t, err)
+
+		r.ServeHTTP(rec, req)
+
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
+		mockUCase.AssertExpectations(t)
+	})
 }
