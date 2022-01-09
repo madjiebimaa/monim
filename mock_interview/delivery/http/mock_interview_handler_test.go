@@ -91,28 +91,6 @@ func TestUpdate(t *testing.T) {
 		mockUCase.AssertExpectations(t)
 	})
 
-	t.Run("fail because request is not valid", func(t *testing.T) {
-		mockUCase.On("Update", mock.Anything, mock.AnythingOfType("*domain.MockInterview")).Return(nil).Once()
-
-		mockMI.Language = ""
-		mockMI.ProgrammingLanguage = ""
-
-		rec := httptest.NewRecorder()
-		r := gin.New()
-		miHttp.NewMockInterviewHandler(r, mockUCase)
-
-		j, err := json.Marshal(mockMI)
-		assert.NoError(t, err)
-
-		req, err := http.NewRequest(http.MethodPatch, "/api/mock_interviews", strings.NewReader(string(j)))
-		assert.NoError(t, err)
-
-		r.ServeHTTP(rec, req)
-
-		assert.Equal(t, http.StatusBadRequest, rec.Code)
-		mockUCase.AssertExpectations(t)
-	})
-
 	t.Run("fail because there's error in MI use case", func(t *testing.T) {
 		mockUCase.On("Update", mock.Anything, mock.AnythingOfType("*domain.MockInterview")).Return(domain.ErrInternalServerError).Once()
 
@@ -128,7 +106,7 @@ func TestUpdate(t *testing.T) {
 
 		r.ServeHTTP(rec, req)
 
-		assert.Equal(t, http.StatusBadRequest, rec.Code)
+		assert.Equal(t, http.StatusInternalServerError, rec.Code)
 		mockUCase.AssertExpectations(t)
 	})
 }
